@@ -1,58 +1,69 @@
-import { icons } from "@/constants/icons";
-import { images } from "@/constants/images";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Image, ImageBackground, Text, View } from "react-native";
+import { ImageBackground, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { images } from "@/constants/images";
 
 type TabIconProps = {
-  title: string;
-  icon: any; // you can replace `any` with ImageSourcePropType for type safety
-  focused: any;
+  name: keyof typeof Ionicons.glyphMap;
+  focused: boolean;
 };
 
-const TabIcon = ({ title, icon, focused }: TabIconProps) => {
+const TabIcon = ({ name, focused }: TabIconProps) => {
+  const iconName = focused ? name : (`${name}-outline` as keyof typeof Ionicons.glyphMap);
+  const iconColor = focused ? "#151312" : "#CDCDE0";
+  const iconSize = focused ? 24 : 26;
+
   if (focused) {
     return (
       <ImageBackground
         source={images.highlight}
-        className="flex flex-row w-full flex-1 min-w-[112px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden"
+        className="flex w-16 h-16 justify-center items-center rounded-full overflow-hidden"
+        resizeMode="cover"
       >
-        <Image source={icon} tintColor="#151312" className="size-5" />
-        <Text className="font-semibold ml-2">{title}</Text>
+        <Ionicons name={iconName} size={iconSize} color={iconColor} />
       </ImageBackground>
     );
   }
 
-  // When NOT focused
   return (
-    <View className="flex items-center mt-4">
-      <Image source={icon} tintColor="#666" className="size-5" />
+    <View className="flex items-center justify-center">
+      <Ionicons name={iconName} size={iconSize} color={iconColor} />
     </View>
   );
 };
 
-const _layout = () => {
+const TabsLayout = () => {
   return (
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: "#FFA001",
         tabBarInactiveTintColor: "#CDCDE0",
+        
+        
         tabBarItemStyle: {
-          width: "100%",
-          height: "10%",
+          flex: 1, // Make each tab item take up equal width
           justifyContent: "center",
           alignItems: "center",
+          overflow: "visible", 
+         
         },
+        // ------------------------------------
+
         tabBarStyle: {
+          display: "flex",
+          // We don't need justifyContent here anymore since flex:1 handles distribution
+          flexDirection: 'row', // Ensure items are laid out horizontally
+          alignItems: "center", // Vertically centers the items within the bar
           backgroundColor: "#0f0D23",
           borderRadius: 50,
-          marginHorizontal: 20,
-          marginBottom: 36,
+          marginHorizontal: 16,
+          marginBottom: 24,
           position: "absolute",
-          overflow: "hidden",
-          borderWidth: 1,
-          borderColor: "#0f0d23",
+          height: 80, // A little more height can feel more balanced
+          borderTopWidth: 0,
+          elevation: 0,
         },
       }}
     >
@@ -61,8 +72,8 @@ const _layout = () => {
         options={{
           title: "Home",
           headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={icons.home} title="Home" focused={focused} />
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="home" focused={focused} />
           ),
         }}
       />
@@ -71,8 +82,8 @@ const _layout = () => {
         options={{
           title: "Search",
           headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={icons.search} title="Search" focused={focused} />
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="search" focused={focused} />
           ),
         }}
       />
@@ -81,8 +92,8 @@ const _layout = () => {
         options={{
           title: "Saved",
           headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={icons.save} title="Saved" focused={focused} />
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="bookmark" focused={focused} />
           ),
         }}
       />
@@ -91,8 +102,8 @@ const _layout = () => {
         options={{
           title: "Profile",
           headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={icons.person} title="Profile" focused={focused} />
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="person" focused={focused} />
           ),
         }}
       />
@@ -100,4 +111,4 @@ const _layout = () => {
   );
 };
 
-export default _layout;
+export default TabsLayout;
