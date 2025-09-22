@@ -1,11 +1,16 @@
-import { Text, View } from "react-native";
+import { Text, View, Button } from "react-native";
+import { useSession } from "../../context/SessionProvider";
 
-const profile = () => {
+const Profile = () => {
+  const { signOut, user } = useSession();
+
   return (
-    <View className="flex-1 items-center justify-center">
-      <Text>Profile haha</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+      <Text>Profile Screen</Text>
+      {user && <Text>Welcome, {user.email}</Text>}
+      <Button title="Sign Out" onPress={signOut} />
     </View>
   );
 };
 
-export default profile;
+export default Profile;

@@ -23,7 +23,7 @@ export const searchMovies = async (query: string) => {
     if (data.Response === "True") {
       return {
         movies: data.Search || [],
-        totalResults: parseInt(data.totalResults, 10) || 0,
+        totalResults: parseInt(data.totalResults, 100) || 0,
       };
     } else {
       return { movies: [], totalResults: 0 };

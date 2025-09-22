@@ -2,7 +2,7 @@ import { images } from "@/constants/images";
 import "../../app/global.css";
 
 import MovieCard from "@/components/MovieCard";
-import SearchBar from "@/components/searchBar"
+import SearchBar from "@/components/searchBar";
 import { icons } from "@/constants/icons";
 import { Movie } from "@/interfaces/interfaces";
 import { searchMovies } from "@/service/searchMovies";
@@ -15,7 +15,6 @@ import {
   Text,
   View,
 } from "react-native";
-
 
 export default function Index() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -57,7 +56,7 @@ export default function Index() {
                   Search Results
                 </Text>
                 <Text className="text-secondary-text mt-1">
-                  Found {totalResults} results...
+                  Found {totalResults} results..
                 </Text>
               </View>
             ) : null}

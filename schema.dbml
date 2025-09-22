@@ -1,0 +1,47 @@
+Table users {
+  id text [pk]
+  email text [unique, not null]
+  password text [not null]
+  username text [unique]
+  avatar text
+  bio text
+}
+
+Table favorites {
+  id text [pk]
+  user_id text [not null, ref: > users.id]
+  tmdb_id int [not null]
+  media_type text [not null] // movie | tv
+  title text
+  poster_path text
+}
+
+Table watchlist {
+  id text [pk]
+  user_id text [not null, ref: > users.id]
+  tmdb_id int [not null]
+  media_type text [not null] // movie | tv
+  status text [not null] // planned | watching | completed
+}
+
+Table reviews {
+  id text [pk]
+  user_id text [not null, ref: > users.id]
+  tmdb_id int [not null]
+  rating int
+  content text
+}
+
+Table comments {
+  id text [pk]
+  user_id text [not null, ref: > users.id]
+  review_id text [not null, ref: > reviews.id]
+  content text
+}
+
+Table likes {
+  id text [pk]
+  user_id text [not null, ref: > users.id]
+  target_type text [not null] // review | comment
+  target_id text [not null] // references reviews.id or comments.id (app-level enforcement)
+}
