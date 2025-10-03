@@ -39,7 +39,7 @@ export default function Index() {
 
   return (
     <View className="flex-1 bg-primary">
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="light-content" />  
       <Image source={images.bg} className="absolute w-full " />
       <FlatList
         data={movies}
