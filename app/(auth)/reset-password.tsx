@@ -1,8 +1,7 @@
-import React from "react";
+import { ResetPasswordForm } from "@/components/reset-password-form";
 import { ScrollView, View } from "react-native";
-import { SignInForm } from "@/components/sign-in-form";
 
-export default function SignInScreen() {
+export default function ResetPasswordScreen() {
   return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -10,7 +9,7 @@ export default function SignInScreen() {
       keyboardDismissMode="interactive"
     >
       <View className="w-full max-w-sm">
-        <SignInForm />
+        <ResetPasswordForm />
       </View>
     </ScrollView>
   );

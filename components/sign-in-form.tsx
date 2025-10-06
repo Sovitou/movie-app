@@ -49,8 +49,8 @@ export function SignInForm() {
       await pb.collection("users").authWithPassword(email, password);
       console.log(pb.authStore.isValid);
       console.log(pb.authStore.token);
-      // console.log(pb.authStore.record.id);
-      // On success, replace the navigation stack to the tabs (home) route.
+
+      // redirect to main app screen
       router.replace("/(tabs)");
     } catch (err: any) {
       // PocketBase throws ClientResponseError for HTTP errors, which contain a `.data` payload.
@@ -127,9 +127,8 @@ export function SignInForm() {
                   variant="link"
                   size="sm"
                   className="web:h-fit ml-auto h-4 px-1 py-0 sm:h-4"
-                  
                   onPress={() => {
-                    // TODO: Navigate to forgot password screen
+                    router.push("/(auth)/forget-password");
                   }}
                 >
                   <Text className="font-normal leading-4">
@@ -159,7 +158,7 @@ export function SignInForm() {
             Don&apos;t have an account?{" "}
             <Pressable
               onPress={() => {
-                // TODO: Navigate to sign up screen
+                router.push("/(auth)/signup");
               }}
             >
               <Text className="text-sm underline underline-offset-4">
