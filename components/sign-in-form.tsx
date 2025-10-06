@@ -1,4 +1,5 @@
 import { SocialConnections } from "@/components/social-connections";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,10 +14,10 @@ import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
 import pb from "@/service/pocketbase";
 import { useRouter } from "expo-router";
+import { Ban } from "lucide-react-native";
 import * as React from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   type TextInput,
   View,
@@ -28,6 +29,7 @@ export function SignInForm() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null); // New state for error messages
 
   function onEmailSubmitEditing() {
     passwordInputRef.current?.focus();
@@ -38,55 +40,40 @@ export function SignInForm() {
   }
 
   async function handleContinue() {
+    setError(null); // Clear previous errors on a new attempt
+
     if (!email.trim() || !password) {
-      Alert.alert("Validation", "Email and password are required");
+      setError("Email and Password are required.");
       return;
     }
 
     setLoading(true);
     try {
-      // Authenticate with PocketBase. Collection 'users' is the default builtin users collection.
+      // Authenticate with PocketBase
       await pb.collection("users").authWithPassword(email, password);
-      console.log(pb.authStore.isValid);
-      console.log(pb.authStore.token);
-
-      // redirect to main app screen
+      // On success, redirect to the main app screen
       router.replace("/(tabs)");
     } catch (err: any) {
-      // PocketBase throws ClientResponseError for HTTP errors, which contain a `.data` payload.
       console.error("Login failed", err);
-      // Provide a clearer message for common failure scenarios.
-      let message = "Unable to sign in";
-
+      // Your excellent error parsing logic to generate a user-friendly message
+      let message = "Unable to sign in. Please check your credentials.";
       try {
-        // Network error (fetch failed) may result in no .data and a message like 'Failed to fetch'
         if (
           err?.name === "TypeError" &&
           /fetch|network/i.test(err?.message || "")
         ) {
           message =
-            "Network error: unable to reach authentication server. Check your PocketBase URL and network.";
-        } else if (err?.data) {
-          // err.data often contains { code, message, data }
-          // Prefer a human-friendly message when available.
-          if (typeof err.data === "string") {
-            message = err.data;
-          } else if (err.data.message) {
-            message = err.data.message;
-          } else if (err.message) {
-            message = err.message;
-          } else {
-            message = JSON.stringify(err.data);
-          }
+            "Network error: Unable to reach the server. Please check your connection.";
+        } else if (err?.data?.message) {
+          message = err.data.message;
         } else if (err?.message) {
           message = err.message;
         }
       } catch (parseErr) {
         console.error("Error parsing auth error", parseErr);
       }
-
-      // Show the user a readable message and print the raw error for debugging.
-      Alert.alert("Sign in failed", message);
+      // Set the error state to display the alert component
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -104,6 +91,14 @@ export function SignInForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="gap-6">
+          {/* Conditionally rendered Alert component */}
+          {error && (
+            <Alert variant="destructive" icon={Ban}>
+              <AlertTitle>Login failed !</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <View className="gap-6">
             <View className="gap-1.5">
               <Label htmlFor="email">Email</Label>

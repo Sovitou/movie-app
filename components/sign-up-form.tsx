@@ -1,4 +1,5 @@
 import { SocialConnections } from "@/components/social-connections";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,31 +13,38 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
 import pb from "@/service/pocketbase";
-import { router } from "expo-router";
+import { useRouter } from "expo-router"; // Import useRouter
+import { Ban } from "lucide-react-native";
 import * as React from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 
 export const SignUpForm = () => {
+  // Add refs for better focus management
+  const emailInputRef = React.useRef<TextInput>(null);
   const passwordInputRef = React.useRef<TextInput>(null);
+  const confirmPasswordInputRef = React.useRef<TextInput>(null);
+  const nameInputRef = React.useRef<TextInput>(null);
+
+  const router = useRouter(); // Initialize router
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [name, setName] = React.useState("");
   const [loading, setLoading] = React.useState(false);
-
-  function onEmailSubmitEditing() {
-    passwordInputRef.current?.focus();
-  }
+  const [error, setError] = React.useState<string | null>(null);
 
   async function handleSignUp() {
-    if (!email.trim() || !password || !confirmPassword || !name) {
-      alert("Email, Password, Confirm Password and Name are required");
+    setError(null); // Clear previous errors
+
+    if (!email.trim() || !password || !confirmPassword || !name.trim()) {
+      setError("All fields are required.");
       return;
     }
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match.");
       return;
     }
+
     const data = {
       email,
       password,
@@ -47,15 +55,27 @@ export const SignUpForm = () => {
 
     setLoading(true);
     try {
-      // Create a new user in PB
+      // 1. Create a new user in PocketBase
       await pb.collection("users").create(data);
       console.log("✅ Sign up successful");
 
-      // Auto sign-in the user after sign up
+      // 2. Auto sign-in the user after sign up
       await pb.collection("users").authWithPassword(email, password);
-    } catch (err) {
+      console.log("✅ Auto sign-in successful");
+
+      // 3. Navigate to the main app screen
+      router.replace("/(tabs)");
+    } catch (err: any) {
       console.error("❌ Sign up failed", err);
-      alert("Unable to sign up");
+      // More detailed error parsing
+      let message = "Unable to create your account. Please try again.";
+      if (err?.data?.data?.email?.message) {
+        // Specifically for "Email already exists" errors from PocketBase
+        message = err.data.data.email.message;
+      } else if (err?.data?.message) {
+        message = err.data.message;
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -74,47 +94,52 @@ export const SignUpForm = () => {
         </CardHeader>
 
         <CardContent className="gap-6">
+          {/* Conditionally rendered Alert component */}
+          {error && (
+            <Alert variant="destructive" icon={Ban}>
+              <AlertTitle>Sign up failed!</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <View className="gap-6">
             <View className="gap-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
+                ref={emailInputRef}
                 id="email"
                 placeholder="johndoe@example.com"
                 keyboardType="email-address"
                 autoComplete="email"
                 autoCapitalize="none"
-                onSubmitEditing={onEmailSubmitEditing}
                 returnKeyType="next"
-                submitBehavior="submit"
+                onSubmitEditing={() => passwordInputRef.current?.focus()}
                 value={email}
                 onChangeText={setEmail}
               />
             </View>
 
             <View className="gap-1.5">
-              <View className="flex-row items-center">
-                <Label htmlFor="password">Password</Label>
-              </View>
+              <Label htmlFor="password">Password</Label>
               <Input
                 ref={passwordInputRef}
                 id="password"
                 secureTextEntry
-                returnKeyType="send"
-                onSubmitEditing={handleSignUp}
+                returnKeyType="next"
+                onSubmitEditing={() => confirmPasswordInputRef.current?.focus()}
                 value={password}
                 onChangeText={setPassword}
               />
             </View>
 
             <View className="gap-1.5">
-              <View className="flex-row items-center">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-              </View>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
+                ref={confirmPasswordInputRef}
                 id="confirmPassword"
                 secureTextEntry
-                returnKeyType="send"
-                onSubmitEditing={handleSignUp}
+                returnKeyType="next"
+                onSubmitEditing={() => nameInputRef.current?.focus()}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
               />
@@ -123,6 +148,7 @@ export const SignUpForm = () => {
             <View className="gap-1.5">
               <Label htmlFor="name">Name</Label>
               <Input
+                ref={nameInputRef}
                 id="name"
                 placeholder="John Doe"
                 autoComplete="name"
@@ -139,7 +165,11 @@ export const SignUpForm = () => {
               onPress={handleSignUp}
               disabled={loading}
             >
-              <Text>{loading ? "Creating..." : "Continue"}</Text>
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text>Continue</Text>
+              )}
             </Button>
           </View>
 
